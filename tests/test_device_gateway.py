@@ -38,3 +38,23 @@ def test_unknown_device_returns_404():
         json={"action": "POWER_ON"}
     )
     assert response.status_code == 404
+
+def test_register_and_deregister_device_lifecycle():
+    reg_res = client.post(
+        "/devices/register",
+        json={"device_id": "dev-test-99", "name": "Bedroom Speaker", "protocol": "MiIO"}
+    )
+    assert reg_res.status_code == 201
+    assert reg_res.json()["device_id"] == "dev-test-99"
+
+    dup_res = client.post(
+        "/devices/register",
+        json={"device_id": "dev-test-99", "name": "Bedroom Speaker", "protocol": "MiIO"}
+    )
+    assert dup_res.status_code == 409
+
+    del_res = client.delete("/devices/dev-test-99")
+    assert del_res.status_code == 204
+
+    get_res = client.get("/devices/dev-test-99")
+    assert get_res.status_code == 404

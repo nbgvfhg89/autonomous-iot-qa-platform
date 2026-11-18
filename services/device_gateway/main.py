@@ -1,11 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response, status
 from typing import Dict, List
-from services.device_gateway.schema import DeviceInfo, DeviceCommand, CommandResponse
+from services.device_gateway.schemas import (
+    DeviceRegisterRequest,
+    DeviceInfo,
+    DeviceCommand,
+    CommandResponse,
+)
 
 app = FastAPI(
     title="Autonomous IoT QA & Device Gateway",
     description="Cloud-native device control and automated testing service",
-    version="0.3.0",
+    version="0.4.0",
 )
 
 DEVICE_REGISTRY: Dict[str, DeviceInfo] = {
@@ -20,6 +25,22 @@ async def health_check():
 @app.get("/devices/discover", response_model=List[DeviceInfo])
 async def discover_devices():
     return list(DEVICE_REGISTRY.values())
+
+@app.post("/devices/register", response_model=DeviceInfo, status_code=status.HTTP_201_CREATED)
+async def register_device(payload: DeviceRegisterRequest):
+    if payload.device_id in DEVICE_REGISTRY:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Device '{payload.device_id}' is already registered",
+        )
+
+    new_device = DeviceInfo(
+        device_id=payload.device_id,
+        name=payload.name,
+        protocol=payload.protocol,
+    )
+    DEVICE_REGISTRY[payload.device_id] = new_device
+    return new_device
 
 @app.get("/devices/{device_id}", response_model=DeviceInfo)
 async def get_device_status(device_id: str):
@@ -52,4 +73,9 @@ async def send_device_command(device_id: str, command: DeviceCommand):
         updated_state=device,
     )
 
-# TODO (Day 4): Add POST /devices/register endpoint so new simulated IoT devices can dynamically join the gateway
+@app.delete("/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deregister_device(device_id: str):
+    if device_id not in DEVICE_REGISTRY:
+        raise HTTPException(status_code=404, detail=f"Device '{device_id}' not found")
+    del DEVICE_REGISTRY[device_id]
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
