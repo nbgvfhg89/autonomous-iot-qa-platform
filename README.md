@@ -52,7 +52,7 @@ Visit **`http://127.0.0`** to test all endpoints interactively via Swagger UI.
 
 ## 6-Month Engineering Roadmap
 - [x] **Week 1:** FastAPI Device Gateway, Pydantic Schemas, CRUD Endpoints & Pytest Suite
-- [ ] **Week 2:** Real-Time WebSocket Telemetry Stream & Live Event Broadcasting
+- [x] **Week 2:** Real-Time WebSocket Telemetry Stream & Live Event Broadcasting
 - [ ] **Week 3:** PostgreSQL Persistence & Redis State Caching
 - [ ] **Week 4:** Multi-Container Docker Compose & AWS Free Tier Deployment
 - [ ] **Month 2:** Parallel Pytest (`xdist`), Locust Load Testing & GitHub Actions CI/CD
